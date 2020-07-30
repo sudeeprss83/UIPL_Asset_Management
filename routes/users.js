@@ -10,7 +10,7 @@ userRouter.post("/newaccessToken", userController.RegenerateAccessToken);
 
 userRouter.post("/forgot-password", userController.userForgotPassword);
 
-userRouter.post("/reset-password/:id", userController.userResetPassword);
+userRouter.post("/reset-password/:token", userController.userResetPassword);
 
 userRouter.post(
   "/update-password",
@@ -18,7 +18,11 @@ userRouter.post(
   userController.userUpdatePassword
 );
 
-userRouter.post("/auto-logout", userController.userAutoLogout);
+userRouter.post(
+  "/auto-logout",
+  routevalidate.verifyUser,
+  userController.userAutoLogout
+);
 
 userRouter.post("/logout", routevalidate.verifyUser, userController.userLogout);
 

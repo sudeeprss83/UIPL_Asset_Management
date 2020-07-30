@@ -1,6 +1,6 @@
 const Token = require("../models/refresh_token");
 
-module.exports.saveRefreshToken = (token) => {
+module.exports.saveRefreshToken = async (token) => {
   return new Promise((resolve, reject) => {
     Token.create(token)
       .then((data) => {
@@ -12,7 +12,7 @@ module.exports.saveRefreshToken = (token) => {
   });
 };
 
-module.exports.findRefreshToken = (token) => {
+module.exports.findRefreshToken = async (token) => {
   return new Promise((resolve, reject) => {
     Token.findOne({ where: { refreshToken: token } })
       .then((data) => {
@@ -24,7 +24,7 @@ module.exports.findRefreshToken = (token) => {
   });
 };
 
-module.exports.findTokenByUserId = (id) => {
+module.exports.findTokenByUserId = async (id) => {
   return new Promise((resolve, reject) => {
     Token.findOne({ where: { id } })
       .then((data) => {
@@ -36,7 +36,7 @@ module.exports.findTokenByUserId = (id) => {
   });
 };
 
-module.exports.updateTokenById = (id) => {
+module.exports.updateTokenById = async (id) => {
   return new Promise((resolve, reject) => {
     Token.update({ isExpire: 0 }, { where: { id, isExpire: 1 } })
       .then((data) => {
@@ -48,7 +48,7 @@ module.exports.updateTokenById = (id) => {
   });
 };
 
-module.exports.findTokenByIdAndStatus = (id) => {
+module.exports.findTokenByIdAndStatus = async (id) => {
   return new Promise((resolve, reject) => {
     Token.findOne({ where: { id, isExpire: 1 } })
       .then((data) => {

@@ -1,6 +1,6 @@
 const Validation = require("../models/validation");
 
-module.exports.saveValidationData = (data) => {
+module.exports.saveValidationData = async (data) => {
   return new Promise((resolve, reject) => {
     Validation.create(data)
       .then((savedData) => {
@@ -12,7 +12,7 @@ module.exports.saveValidationData = (data) => {
   });
 };
 
-module.exports.findValidationData = (email) => {
+module.exports.findValidationData = async (email) => {
   return new Promise((resolve, reject) => {
     Validation.findOne({ where: { ref_email: email } })
       .then((data) => {
@@ -24,7 +24,7 @@ module.exports.findValidationData = (email) => {
   });
 };
 
-module.exports.updateValidationStatus = (email) => {
+module.exports.updateValidationStatus = async (email) => {
   return new Promise((resolve, reject) => {
     Validation.update(
       { is_expired: 0, is_verified: 0 },
