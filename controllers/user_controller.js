@@ -6,216 +6,174 @@ require("dotenv").config();
 
 const mail = require("../helpers/sendMail");
 
+const validationToken = require("../helpers/validationToken");
+
 const tokenRepo = require("../repositories/tokenRepositories");
 const userRepo = require("../repositories/userRepositories");
+const valRepo = require("../repositories/validationRepositories");
 
 function userLogin(req, res, next) {
-  userRepo
-    .findUserByEmail(req.body.email)
-    .then((user) => {
-      if (user) {
-        if (user.password === md5(req.body.password)) {
-          const newuser = { id: user.id, email: user.email, role: user.role };
-          console.log(newuser);
-          const accessToken = generateAccessToken(newuser);
-          const refreshToken = generateRefreshToken(newuser);
-          tokenRepo
-            .saveRefreshToken({ id: newuser.id, refreshToken })
-            .then(() => {
-              console.log("token saved");
-            })
-            .catch((err) => {
-              console.log("Error occured", err.message);
-            });
-          res.status(200).json({ accessToken, refreshToken });
-        } else {
-          res.status(401).send("Username or password did not matched");
-        }
+  (async () => {
+    const user = await userRepo.findUserByEmail(req.body.email);
+    if (user) {
+      if (user.password === md5(req.body.password)) {
+        const newuser = { id: user.id, email: user.email, role: user.role };
+        const accessToken = generateAccessToken(newuser);
+        const refreshToken = generateRefreshToken(newuser);
+        await tokenRepo.saveRefreshToken({
+          id: newuser.id,
+          refreshToken,
+        });
+        res.status(200).json({ accessToken, refreshToken });
       } else {
-        res.status(200).send("Username or password did not match");
+        res.status(401).send("Username or password did not matched");
       }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+    } else {
+      res.status(200).send("Username or password did not match");
+    }
+  })();
 }
 
 function RegenerateAccessToken(req, res, next) {
   const authHeader = req.headers.authorization;
   if (authHeader) {
     const token = authHeader.split(" ")[1];
-    tokenRepo
-      .findRefreshToken(token)
-      .then((savedToken) => {
-        if (savedToken.dataValues.isExpire == 1) {
-          jwt.verify(
-            savedToken.dataValues.refreshToken,
-            process.env.REFRESH_SECRET_KEY,
-            (err, user) => {
-              const accessToken = generateAccessToken({
-                id: user.id,
-                email: user.email,
-                role: user.role,
-              });
-              const refreshToken = generateRefreshToken({
-                id: user.id,
-                email: user.email,
-                role: user.role,
-              });
-
-              tokenRepo
-                .findTokenByIdAndStatus(user.id)
-                .then((data) => {
-                  tokenRepo
-                    .updateTokenById(data.dataValues.id)
-                    .then((data) => {
-                      tokenRepo
-                        .saveRefreshToken({ id: user.id, refreshToken })
-                        .then((data) => {
-                          console.log("new refresh token saved");
-                        })
-                        .catch((err) => {
-                          console.log(err);
-                        });
-                    })
-                    .catch((err) => {
-                      console.log(err);
-                    });
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-
-              res.status(200).send({ accessToken, refreshToken });
-            }
-          );
-        } else {
-          res.status(403).send("Refresh Token Expired");
-        }
-      })
-      .catch((err) => {
-        console.log("error occured", err.message);
-      });
+    (async () => {
+      const savedToken = await tokenRepo.findRefreshToken(token);
+      if (savedToken.isExpire == 1) {
+        jwt.verify(
+          savedToken.refreshToken,
+          process.env.REFRESH_SECRET_KEY,
+          (err, user) => {
+            myuser = user;
+            const accessToken = generateAccessToken({
+              id: user.id,
+              email: user.email,
+              role: user.role,
+            });
+            const refreshToken = generateRefreshToken({
+              id: user.id,
+              email: user.email,
+              role: user.role,
+            });
+            (async () => {
+              const userData = await tokenRepo.findTokenByIdAndStatus(user.id);
+              await tokenRepo.updateTokenById(userData.id);
+              await tokenRepo.saveRefreshToken({ id: user.id, refreshToken });
+            })();
+            res.status(200).send({ accessToken, refreshToken });
+          }
+        );
+      } else {
+        res.status(403).send("Refresh Token Expired");
+      }
+    })();
   }
 }
 
+//---------------------------------------------------//
+
 function userForgotPassword(req, res, next) {
-  userRepo
-    .findUserByEmail(req.body.email)
-    .then((user) => {
-      const options = {
-        from: "no-reply@gmail.com",
-        to: user.dataValues.email,
-        subject: "Reset Account password",
-        text: "Please click this link to reset your password!",
-        html: `<b>${process.env.URL}/users/reset-password/${user.dataValues.id}</b>`,
-      };
-      mail.sendMailToUser(options);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  (async () => {
+    const user = await userRepo.findUserByEmail(req.body.email);
+    const data = await validationToken.generateValidationToken(user.email);
+    await valRepo.saveValidationData(data);
+    const options = {
+      from: "no-reply@gmail.com",
+      to: user.dataValues.email,
+      subject: "Reset Account password",
+      text: "Please click this link to reset your password!",
+      html: `<b>${process.env.URL}/users/reset-password/${data.validation_hash}</b>`,
+    };
+    mail.sendMailToUser(options);
+  })();
 }
 
 function userResetPassword(req, res, next) {
-  const result = passwordCheck(req.body.newPassword, req.body.cnfNewPassword);
-  if (result) {
-    const newPass = md5(req.body.newPassword);
-    userRepo
-      .updateUserPasswordById(req.params.id, newPass)
-      .then((data) => {
-        console.log("password successfully updated", data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
-}
-
-function userUpdatePassword(req, res, next) {
-  userRepo
-    .findUserByEmail(req.user.email)
-    .then((data) => {
-      if (data.dataValues.password === md5(req.body.oldPassword)) {
-        if (data.dataValues.password === md5(req.body.newPassword)) {
-          res
-            .status(403)
-            .send("new password should be different from old password ");
-        } else {
+  jwt.verify(req.params.token, process.env.ACCESS_SECRET_KEY, (err, user) => {
+    (async () => {
+      if (user) {
+        const data = await valRepo.findValidationData(user.email);
+        console.log(data);
+        if (
+          data.validation_hash === req.params.token &&
+          data.is_expired === 1
+        ) {
           const result = passwordCheck(
             req.body.newPassword,
             req.body.cnfNewPassword
           );
           if (result) {
             const newPass = md5(req.body.newPassword);
-            userRepo
-              .updateUserPasswordById(req.user.id, newPass)
-              .then((data) => {
-                console.log("password successfully updated", data);
-              })
-              .catch((err) => {
-                console.log(err);
-              });
+            const user = await userRepo.findUserByEmail(data.ref_email);
+            await userRepo.updateUserPasswordById(user.id, newPass);
+            await valRepo.updateValidationStatus(data.ref_email);
           }
         }
       } else {
-        res.status(403).send("old password did not match");
+        res.status(404).send("Token Invalid");
       }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+    })();
+  });
+}
+//---------------------------------------------------//
+
+function userUpdatePassword(req, res, next) {
+  (async () => {
+    const user = await userRepo.findUserByEmail(req.user.email);
+    if (user.password === md5(req.body.oldPassword)) {
+      if (user.password === md5(req.body.newPassword)) {
+        res
+          .status(403)
+          .send("new password should be different from old password ");
+      } else {
+        const result = passwordCheck(
+          req.body.newPassword,
+          req.body.cnfNewPassword
+        );
+        if (result) {
+          const newPass = md5(req.body.newPassword);
+          await userRepo.updateUserPasswordById(req.user.id, newPass);
+          res.status(200).send("new password updated successfully ");
+        }
+      }
+    } else {
+      res.status(403).send("old password did not match");
+    }
+  })();
 }
 
 function userAutoLogout(req, res, next) {
-  tokenRepo
-    .findTokenByIdAndStatus(1)
-    .then((data) => {
-      const now = new Date();
-      const currentTime = now.getTime() + 5.5 * 60 * 60 * 1000;
-
-      const userTokenTime = new Date(data.dataValues.createdAt);
-      const lastTokenTime = userTokenTime.getTime() + 5.5 * 60 * 60 * 1000;
-      const timeDifference = Math.floor(
-        (currentTime - lastTokenTime) / (60 * 1000)
-      );
-      console.log(timeDifference);
-      if (timeDifference > 3) {
-        tokenRepo
-          .updateTokenById(data.dataValues.id)
-          .then((data) => {
-            console.log(data);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  (async () => {
+    const data = await tokenRepo.findTokenByIdAndStatus(req.user.id);
+    const now = new Date();
+    const currentTime = now.getTime() + 5.5 * 60 * 60 * 1000;
+    const userTokenTime = new Date(data.dataValues.createdAt);
+    const lastTokenTime = userTokenTime.getTime() + 5.5 * 60 * 60 * 1000;
+    const timeDifference = Math.floor(
+      (currentTime - lastTokenTime) / (60 * 1000)
+    );
+    if (timeDifference > 3) {
+      await tokenRepo.updateTokenById(data.dataValues.id);
+      console.log("user logged out");
+      res.status(200).send("user logged out");
+    } else {
+      console.log("user logged out");
+      res.status(200).send("user is still active");
+    }
+  })();
 }
 
 function userLogout(req, res, next) {
-  tokenRepo
-    .findTokenByUserId(req.user.id)
-    .then((data) => {
-      tokenRepo
-        .updateTokenById(data.dataValues.id)
-        .then((data) => {
-          res.status(200).send("User Logged out");
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  (async () => {
+    const token = await tokenRepo.findTokenByUserId(req.user.id);
+    await tokenRepo.updateTokenById(token.id);
+    res.status(200).send("User Logged out");
+  })();
 }
 
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_SECRET_KEY, { expiresIn: "2m" });
+  return jwt.sign(user, process.env.ACCESS_SECRET_KEY, { expiresIn: "40s" });
 }
 
 function generateRefreshToken(user) {
