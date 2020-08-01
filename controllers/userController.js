@@ -16,7 +16,7 @@ function userLogin(req, res, next) {
     const user = await userRepo.findUserByEmail(req.body.email);
     if (user) {
       if (user.password === md5(req.body.password)) {
-        const newuser = { id: user.id, email: user.email, role: user.role };
+        const newuser = { id: user.id, email: user.email, roleId: user.roleId };
         const accessToken = generateAccessToken(newuser);
         const refreshToken = generateRefreshToken(newuser);
         await tokenRepo.saveRefreshToken({
@@ -48,12 +48,12 @@ function RegenerateAccessToken(req, res, next) {
             const accessToken = generateAccessToken({
               id: user.id,
               email: user.email,
-              role: user.role,
+              roleId: user.roleId,
             });
             const refreshToken = generateRefreshToken({
               id: user.id,
               email: user.email,
-              role: user.role,
+              roleId: user.roleId,
             });
             (async () => {
               const userData = await tokenRepo.findTokenByIdAndStatus(user.id);
@@ -169,7 +169,7 @@ function userLogout(req, res, next) {
 }
 
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_SECRET_KEY, { expiresIn: "40s" });
+  return jwt.sign(user, process.env.ACCESS_SECRET_KEY, { expiresIn: "15m" });
 }
 
 function generateRefreshToken(user) {

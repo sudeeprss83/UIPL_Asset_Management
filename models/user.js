@@ -27,6 +27,7 @@ module.exports = User = sequelize.define(
     },
     status: {
       type: Sequelize.TEXT,
+      defaultValue: "Active",
     },
   },
   {

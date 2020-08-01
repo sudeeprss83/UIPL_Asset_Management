@@ -5,22 +5,60 @@ const dashboardController = require("../controllers/dashboardController");
 const middleware = require("../middlewares/routeValidator");
 
 /* GET dashboard page. */
-dashboardRouter.get("/", middleware.verifyUser,dashboardController.dashboard);
+dashboardRouter.get("/", middleware.verifyUser, dashboardController.dashboard);
 
-dashboardRouter.post("/create-admin", middleware.verifyUser, dashboardController.createAdmin);
+dashboardRouter.post(
+  "/create-admin",
+  middleware.verifyUser,
+  dashboardController.addAdminOrSubAdmin
+);
 
-dashboardRouter.get("/admins", middleware.verifyUser,dashboardController.allAdmins);
+dashboardRouter.get(
+  "/admins",
+  middleware.verifyUser,
+  dashboardController.allAdminsOrSubAdmins
+);
 
-dashboardRouter.get("/admin/:id", middleware.verifyUser,dashboardController.specificAdmin);
+dashboardRouter.get(
+  "/admin/:id",
+  middleware.verifyUser,
+  dashboardController.specificAdminOrSubAdmin
+);
 
-dashboardRouter.post("/block-admin/:id", middleware.verifyUser, dashboardController.blockAdmin);
+dashboardRouter.post(
+  "/block-admin/:id",
+  middleware.verifyUser,
+  dashboardController.blockAdminOrSubAdmin
+);
 
-dashboardRouter.put("/edit-admin", middleware.verifyUser,dashboardController.editAdmin);
+dashboardRouter.post(
+  "/unblock-admin/:id",
+  middleware.verifyUser,
+  dashboardController.unblockAdminOrSubAdmin
+);
 
-dashboardRouter.put("/create-role", middleware.verifyUser,dashboardController.createRole);
+dashboardRouter.put(
+  "/edit-admin",
+  middleware.verifyUser,
+  dashboardController.editAdmin
+);
 
-dashboardRouter.put("/assign-role", middleware.verifyUser, dashboardController.assignRole);
+dashboardRouter.post(
+  "/change-admin-password/:id",
+  middleware.verifyUser,
+  dashboardController.changeAdminOrSubAdminPassword
+);
 
+dashboardRouter.put(
+  "/create-role",
+  middleware.verifyUser,
+  dashboardController.createRole
+);
 
+dashboardRouter.put(
+  "/assign-role",
+  middleware.verifyUser,
+  dashboardController.assignRole
+);
 
 module.exports = dashboardRouter;
