@@ -6,8 +6,8 @@ require("dotenv").config();
 
 const db = require("./config/db");
 
-const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
+const dashboardRouter = require("./routes/dashboard");
 
 const app = express();
 
@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
+app.use("/dashboard", dashboardRouter);
 app.use("/users", usersRouter);
 
 module.exports = app;
