@@ -5,7 +5,6 @@ const Joi = require("@hapi/joi");
 require("dotenv").config();
 
 const mail = require("../helpers/sendMail");
-
 const validationToken = require("../helpers/validationToken");
 
 const tokenRepo = require("../repositories/tokenRepositories");
@@ -71,8 +70,6 @@ function RegenerateAccessToken(req, res, next) {
   }
 }
 
-//---------------------------------------------------//
-
 function userForgotPassword(req, res, next) {
   (async () => {
     const user = await userRepo.findUserByEmail(req.body.email);
@@ -116,7 +113,6 @@ function userResetPassword(req, res, next) {
     })();
   });
 }
-//---------------------------------------------------//
 
 function userUpdatePassword(req, res, next) {
   (async () => {

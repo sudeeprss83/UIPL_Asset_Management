@@ -18,22 +18,15 @@ module.exports = User = sequelize.define(
       unique: true,
       allowNull: false,
     },
-    phone: {
-      type: Sequelize.STRING,
-      unique: true,
-      allowNull: false,
-    },
     password: {
       type: Sequelize.TEXT,
       allowNull: false,
     },
-    role: {
+    roleId: {
       type: Sequelize.TEXT,
-      defaultValue:'Admin'
     },
     status: {
       type: Sequelize.TEXT,
-      defaultValue:'Inactive'
     },
   },
   {
