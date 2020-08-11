@@ -14,7 +14,7 @@ module.exports.saveValidationData = async (data) => {
 
 module.exports.findValidationData = async (email) => {
   return new Promise((resolve, reject) => {
-    Validation.findOne({ where: { ref_email: email } })
+    Validation.findOne({ where: { ref_email: email, is_expired: 1 } })
       .then((data) => {
         resolve(data);
       })
