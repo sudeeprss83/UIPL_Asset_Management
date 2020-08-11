@@ -49,7 +49,7 @@ dashboardRouter.post(
   dashboardController.changeAdminOrSubAdminPassword
 );
 
-dashboardRouter.put(
+dashboardRouter.post(
   "/create-role",
   middleware.verifyUser,
   dashboardController.createRole

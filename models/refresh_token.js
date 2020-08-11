@@ -7,7 +7,6 @@ module.exports = Token = sequelize.define(
     id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
-      autoIncrement: true,
     },
     kind: {
       type: Sequelize.STRING,

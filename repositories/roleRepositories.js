@@ -11,3 +11,18 @@ module.exports.findRoleId = async (role) => {
       });
   });
 };
+
+module.exports.createRole = async (data) => {
+  return new Promise((resolve, reject) => {
+    Role.create({
+      roleId: data.roleId,
+      role: data.roleName,
+    })
+      .then((role) => {
+        resolve(role);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
