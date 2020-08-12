@@ -4,6 +4,7 @@ const Joi = require("@hapi/joi");
 
 require("dotenv").config();
 
+const pwdChk = require("../helpers/passwordCheck");
 const mail = require("../helpers/sendMail");
 const validationToken = require("../helpers/validationToken");
 
@@ -110,7 +111,7 @@ function userForgotPassword(req, res, next) {
         to: user.dataValues.email,
         subject: "Reset Account password",
         text: "Please click this link to reset your password!",
-        html: `<b>${process.env.URL}/users/reset-password/${data.validation_hash}</b>`,
+        html: `<b>${process.env.URL}/admin/reset-password/${data.validation_hash}</b>`,
       };
       const sent = await mail.sendMailToUser(options);
       if (sent) {
@@ -135,13 +136,18 @@ function userForgotPassword(req, res, next) {
 function userResetPassword(req, res, next) {
   jwt.verify(req.params.token, process.env.ACCESS_SECRET_KEY, (err, user) => {
     (async () => {
+      if (err) {
+        res.status(403).send({ status: 403, msg: "Token expired" });
+      }
       if (user) {
         const data = await valRepo.findValidationData(user.email);
         if (
+          data &&
           data.validation_hash === req.params.token &&
           data.is_expired === 1
         ) {
-          const result = await pwd.passwordCheck(
+          console.log("hello----==================");
+          const result = await pwdChk.passwordCheck(
             req.body.newPassword,
             req.body.cnfNewPassword
           );
@@ -156,6 +162,8 @@ function userResetPassword(req, res, next) {
           } else {
             res.status(403).send({ status: 403, msg: result.message });
           }
+        } else {
+          res.status(403).send({ status: 403, msg: "Token expired" });
         }
       } else {
         res

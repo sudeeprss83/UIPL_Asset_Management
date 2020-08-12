@@ -6,7 +6,7 @@ require("dotenv").config();
 
 const db = require("./config/db");
 
-const usersRouter = require("./routes/users");
+const adminRouter = require("./routes/users");
 const dashboardRouter = require("./routes/dashboard");
 
 const app = express();
@@ -22,6 +22,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/dashboard", dashboardRouter);
-app.use("/users", usersRouter);
+app.use("/admin", adminRouter);
 
 module.exports = app;
