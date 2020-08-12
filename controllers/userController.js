@@ -1,6 +1,5 @@
 const md5 = require("md5");
 const jwt = require("jsonwebtoken");
-const Joi = require("@hapi/joi");
 
 require("dotenv").config();
 
@@ -111,7 +110,7 @@ function userForgotPassword(req, res, next) {
         to: user.dataValues.email,
         subject: "Reset Account password",
         text: "Please click this link to reset your password!",
-        html: `<b>${process.env.URL}/admin/reset-password/${data.validation_hash}</b>`,
+        html: `<b>${process.env.URL}/admin/api/reset-password/${data.validation_hash}</b>`,
       };
       const sent = await mail.sendMailToUser(options);
       if (sent) {
