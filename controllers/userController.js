@@ -200,6 +200,7 @@ function RegenerateAccessToken(req, res, next) {
   }
 }
 
+//change password -> admin profile
 function userUpdatePassword(req, res, next) {
   (async () => {
     const user = await userRepo.findUserByEmail(req.user.email);
