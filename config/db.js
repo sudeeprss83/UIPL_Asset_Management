@@ -1,3 +1,5 @@
+//@sudip saha roy 
+
 const { Sequelize } = require("sequelize");
 require("dotenv").config();
 

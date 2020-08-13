@@ -1,3 +1,5 @@
+//@sudip saha roy 
+
 const sequelize = require("../config/db");
 const { Sequelize } = require("sequelize");
 

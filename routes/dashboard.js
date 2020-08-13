@@ -55,7 +55,7 @@ dashboardRouter.post(
   dashboardController.createRole
 );
 
-dashboardRouter.put(
+dashboardRouter.post(
   "/assign-role",
   middleware.verifyUser,
   dashboardController.assignRole
