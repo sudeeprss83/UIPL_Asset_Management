@@ -1,10 +1,14 @@
+//@sudip saha roy 
+
 const md5 = require("md5");
 
 const pwdChk = require("../helpers/passwordCheck");
 const userRepo = require("../repositories/userRepositories");
 const roleRepo = require("../repositories/roleRepositories");
 
+//for route protection teesting
 function dashboard(req, res, next) {
+  console.log(req.user);
   res.json({ status: 200, msg: "this is super-admin's dashboard" });
 }
 
@@ -102,6 +106,39 @@ function changeAdminOrSubAdminPassword(req, res, next) {
   }
 }
 
+//change password -> admin profile
+function userUpdatePassword(req, res, next) {
+  (async () => {
+    const user = await userRepo.findUserByEmail(req.user.email);
+    if (user.password === md5(req.body.oldPassword)) {
+      if (user.password === md5(req.body.newPassword)) {
+        res.status(403).send({
+          status: 403,
+          msg: "new password should be different from old password",
+        });
+      } else {
+        const result = await pwdChk.passwordCheck(
+          req.body.newPassword,
+          req.body.cnfNewPassword
+        );
+        console.log(result);
+        if (result.err === false) {
+          const newPass = md5(req.body.newPassword);
+          await userRepo.updateUserPasswordById(req.user.id, newPass);
+          res.status(200).send({ status: 200, msg: result.message });
+        } else {
+          res.status(403).send({ status: 403, msg: result.message });
+        }
+      }
+    } else {
+      res.status(403).send({
+        status: 403,
+        msg: "old password did not match",
+      });
+    }
+  })();
+}
+
 function createRole(req, res, next) {
   if (req.user.roleId == 1) {
     (async () => {
@@ -144,4 +181,5 @@ module.exports = {
   createRole,
   assignRole,
   changeAdminOrSubAdminPassword,
+  userUpdatePassword
 };

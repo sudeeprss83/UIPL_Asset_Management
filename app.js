@@ -1,19 +1,17 @@
+//@sudip saha roy 
+
 const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+
 require("dotenv").config();
+require("./config/db");
 
-const db = require("./config/db");
-
-const usersRouter = require("./routes/users");
+const adminRouter = require("./routes/users");
 const dashboardRouter = require("./routes/dashboard");
 
 const app = express();
-
-// view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
 
 app.use(logger("dev"));
 app.use(express.json());
@@ -22,6 +20,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/dashboard", dashboardRouter);
-app.use("/users", usersRouter);
+app.use("/admin/api", adminRouter);
 
 module.exports = app;

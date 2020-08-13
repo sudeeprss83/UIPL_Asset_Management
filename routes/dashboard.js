@@ -55,10 +55,16 @@ dashboardRouter.post(
   dashboardController.createRole
 );
 
-dashboardRouter.put(
+dashboardRouter.post(
   "/assign-role",
   middleware.verifyUser,
   dashboardController.assignRole
+);
+
+dashboardRouter.post(
+  "/update-password",
+  middleware.verifyUser,
+  dashboardController.userUpdatePassword
 );
 
 module.exports = dashboardRouter;
