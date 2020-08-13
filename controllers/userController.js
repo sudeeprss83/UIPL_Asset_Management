@@ -62,15 +62,22 @@ function userForgotPassword(req, res, next) {
         text: "Please click this link to reset your password!",
         html: `<b>${process.env.URL}/admin/api/reset-password/${data.validation_hash}</b>`,
       };
-      const sent = await mail.sendMailToUser(options);
-      if (sent) {
-        res
-          .status(200)
-          .send({ status: 200, msg: "Mail sent! Please check your email" });
-      } else {
+      try {
+        const sent = await mail.sendMailToUser(options);
+        if (sent) {
+          res
+            .status(200)
+            .send({ status: 200, msg: "Mail sent! Please check your email" });
+        } else {
+          res.status(403).json({
+            status: 403,
+            msg: "Email address invalid",
+          });
+        }
+      } catch (error) {
         res.status(403).json({
           status: 403,
-          msg: "Email address invalid",
+          msg: "something went wrong",
         });
       }
     } else {
@@ -200,39 +207,6 @@ function RegenerateAccessToken(req, res, next) {
   }
 }
 
-//change password -> admin profile
-function userUpdatePassword(req, res, next) {
-  (async () => {
-    const user = await userRepo.findUserByEmail(req.user.email);
-    if (user.password === md5(req.body.oldPassword)) {
-      if (user.password === md5(req.body.newPassword)) {
-        res.status(403).send({
-          status: 403,
-          msg: "new password should be different from old password",
-        });
-      } else {
-        const result = await pwd.passwordCheck(
-          req.body.newPassword,
-          req.body.cnfNewPassword
-        );
-        console.log(result);
-        if (result.err === false) {
-          const newPass = md5(req.body.newPassword);
-          await userRepo.updateUserPasswordById(req.user.id, newPass);
-          res.status(200).send({ status: 200, msg: result.message });
-        } else {
-          res.status(403).send({ status: 403, msg: result.message });
-        }
-      }
-    } else {
-      res.status(403).send({
-        status: 403,
-        msg: "old password did not match",
-      });
-    }
-  })();
-}
-
 function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_SECRET_KEY, { expiresIn: "15m" });
 }
@@ -245,7 +219,6 @@ module.exports = {
   userLogin,
   RegenerateAccessToken,
   userForgotPassword,
-  userUpdatePassword,
   userAutoLogout,
   userLogout,
   userResetPassword,

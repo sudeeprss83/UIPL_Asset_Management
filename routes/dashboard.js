@@ -61,4 +61,10 @@ dashboardRouter.put(
   dashboardController.assignRole
 );
 
+dashboardRouter.post(
+  "/update-password",
+  middleware.verifyUser,
+  dashboardController.userUpdatePassword
+);
+
 module.exports = dashboardRouter;
