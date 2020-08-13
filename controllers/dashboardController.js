@@ -4,6 +4,7 @@ const pwdChk = require("../helpers/passwordCheck");
 const userRepo = require("../repositories/userRepositories");
 const roleRepo = require("../repositories/roleRepositories");
 
+//for route protection teesting
 function dashboard(req, res, next) {
   console.log(req.user);
   res.json({ status: 200, msg: "this is super-admin's dashboard" });
