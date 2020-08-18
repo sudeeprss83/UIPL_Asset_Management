@@ -13,11 +13,7 @@ module.exports.createUser = async (user) => {
   });
 };
 
-<<<<<<< HEAD
-module.exports.updateUserPasswordById = async (id, password) => {
-=======
 module.exports.updateUserPassword = async (id, password) => {
->>>>>>> Sudip
   return new Promise((resolve, reject) => {
     User.update({ password }, { where: { id } })
       .then((data) => {
@@ -29,8 +25,6 @@ module.exports.updateUserPassword = async (id, password) => {
   });
 };
 
-<<<<<<< HEAD
-=======
 module.exports.updateUser = async (id, newUser) => {
   return new Promise((resolve, reject) => {
     User.update(newUser, { where: { id } })
@@ -43,7 +37,6 @@ module.exports.updateUser = async (id, newUser) => {
   });
 };
 
->>>>>>> Sudip
 module.exports.findUserByEmail = async (email) => {
   return new Promise((resolve, reject) => {
     User.findOne({ where: { email } })
@@ -56,9 +49,6 @@ module.exports.findUserByEmail = async (email) => {
   });
 };
 
-<<<<<<< HEAD
-module.exports.updateAccountStatus = async (email) => {
-=======
 module.exports.findUsers = async (roleId) => {
   return new Promise((resolve, reject) => {
     User.findAll({ where: { roleId } })
@@ -96,7 +86,6 @@ module.exports.blockAdmin = async (id) => {
 };
 
 module.exports.unblockAdmin = async (id) => {
->>>>>>> Sudip
   return new Promise((resolve, reject) => {
     User.update({ status: "Active" }, { where: { id } })
       .then((data) => {

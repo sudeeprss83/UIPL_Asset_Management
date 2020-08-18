@@ -7,48 +7,6 @@ const middleware = require("../middlewares/routeValidator");
 /* GET dashboard page. */
 dashboardRouter.get("/", middleware.verifyUser, dashboardController.dashboard);
 
-<<<<<<< HEAD
-dashboardRouter.post(
-  "/create-admin",
-  middleware.verifyUser,
-  dashboardController.addAdminOrSubAdmin
-);
-
-dashboardRouter.get(
-  "/admins",
-  middleware.verifyUser,
-  dashboardController.allAdminsOrSubAdmins
-);
-
-dashboardRouter.get(
-  "/admin/:id",
-  middleware.verifyUser,
-  dashboardController.specificAdminOrSubAdmin
-);
-
-dashboardRouter.post(
-  "/block-admin/:id",
-  middleware.verifyUser,
-  dashboardController.blockAdminOrSubAdmin
-);
-
-dashboardRouter.post(
-  "/unblock-admin/:id",
-  middleware.verifyUser,
-  dashboardController.unblockAdminOrSubAdmin
-);
-
-dashboardRouter.put(
-  "/edit-admin",
-  middleware.verifyUser,
-  dashboardController.editAdmin
-);
-
-dashboardRouter.post(
-  "/change-admin-password/:id",
-  middleware.verifyUser,
-  dashboardController.changeAdminOrSubAdminPassword
-=======
 // dashboardRouter.post(
 //   "/create-admin",
 //   middleware.verifyUser,
@@ -134,7 +92,6 @@ dashboardRouter.post(
   "/unblock-subadmin/:id",
   middleware.verifyUser,
   dashboardController.unblockSubadmin
->>>>>>> Sudip
 );
 
 dashboardRouter.post(
@@ -144,17 +101,6 @@ dashboardRouter.post(
 );
 
 dashboardRouter.post(
-<<<<<<< HEAD
-  "/assign-role",
-  middleware.verifyUser,
-  dashboardController.assignRole
-);
-
-dashboardRouter.post(
-  "/update-password",
-  middleware.verifyUser,
-  dashboardController.userUpdatePassword
-=======
   "/edit-role",
   middleware.verifyUser,
   dashboardController.editRole
@@ -164,7 +110,6 @@ dashboardRouter.post(
   "/assign-role",
   middleware.verifyUser,
   dashboardController.assignRole
->>>>>>> Sudip
 );
 
 module.exports = dashboardRouter;

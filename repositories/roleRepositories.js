@@ -12,8 +12,6 @@ module.exports.findRoleId = async (role) => {
   });
 };
 
-<<<<<<< HEAD
-=======
 module.exports.findRoleById = async (roleId) => {
   return new Promise((resolve, reject) => {
     Role.findOne({ where: { roleId } })
@@ -26,7 +24,6 @@ module.exports.findRoleById = async (roleId) => {
   });
 };
 
->>>>>>> Sudip
 module.exports.createRole = async (data) => {
   return new Promise((resolve, reject) => {
     Role.create({
