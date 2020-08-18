@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 //@sudip saha roy 
+=======
+//@sudip saha roy
+>>>>>>> Sudip
 
 const md5 = require("md5");
 const jwt = require("jsonwebtoken");
@@ -13,6 +17,10 @@ const tokenRepo = require("../repositories/tokenRepositories");
 const userRepo = require("../repositories/userRepositories");
 const valRepo = require("../repositories/validationRepositories");
 
+<<<<<<< HEAD
+=======
+// user login route
+>>>>>>> Sudip
 function userLogin(req, res, next) {
   (async () => {
     const user = await userRepo.findUserByEmail(req.body.email);
@@ -51,6 +59,10 @@ function userLogin(req, res, next) {
   })();
 }
 
+<<<<<<< HEAD
+=======
+//forgot password route
+>>>>>>> Sudip
 function userForgotPassword(req, res, next) {
   (async () => {
     const user = await userRepo.findUserByEmail(req.body.email);
@@ -91,6 +103,10 @@ function userForgotPassword(req, res, next) {
   })();
 }
 
+<<<<<<< HEAD
+=======
+//reset password route
+>>>>>>> Sudip
 function userResetPassword(req, res, next) {
   jwt.verify(req.params.token, process.env.ACCESS_SECRET_KEY, (err, user) => {
     (async () => {
@@ -112,7 +128,11 @@ function userResetPassword(req, res, next) {
           if (result.err === false) {
             const newPass = md5(req.body.newPassword);
             const user = await userRepo.findUserByEmail(data.ref_email);
+<<<<<<< HEAD
             await userRepo.updateUserPasswordById(user.id, newPass);
+=======
+            await userRepo.updateUserPassword(user.id, newPass);
+>>>>>>> Sudip
             await valRepo.updateValidationStatus(data.ref_email);
             res
               .status(200)
@@ -132,6 +152,10 @@ function userResetPassword(req, res, next) {
   });
 }
 
+<<<<<<< HEAD
+=======
+//user auto logout
+>>>>>>> Sudip
 function userAutoLogout(req, res, next) {
   (async () => {
     const data = await tokenRepo.findTokenByIdAndStatus(req.user.id);
@@ -151,6 +175,10 @@ function userAutoLogout(req, res, next) {
   })();
 }
 
+<<<<<<< HEAD
+=======
+//user logout
+>>>>>>> Sudip
 function userLogout(req, res, next) {
   (async () => {
     const token = await tokenRepo.findTokenByUserId(req.user.id);
@@ -159,6 +187,10 @@ function userLogout(req, res, next) {
   })();
 }
 
+<<<<<<< HEAD
+=======
+//regenerate access token
+>>>>>>> Sudip
 function RegenerateAccessToken(req, res, next) {
   const authHeader = req.headers.authorization;
   if (authHeader) {
