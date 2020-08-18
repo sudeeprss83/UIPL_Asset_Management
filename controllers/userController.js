@@ -1,4 +1,4 @@
-//@sudip saha roy 
+//@sudip saha roy
 
 const md5 = require("md5");
 const jwt = require("jsonwebtoken");
@@ -13,6 +13,7 @@ const tokenRepo = require("../repositories/tokenRepositories");
 const userRepo = require("../repositories/userRepositories");
 const valRepo = require("../repositories/validationRepositories");
 
+// user login route
 function userLogin(req, res, next) {
   (async () => {
     const user = await userRepo.findUserByEmail(req.body.email);
@@ -51,6 +52,7 @@ function userLogin(req, res, next) {
   })();
 }
 
+//forgot password route
 function userForgotPassword(req, res, next) {
   (async () => {
     const user = await userRepo.findUserByEmail(req.body.email);
@@ -91,6 +93,7 @@ function userForgotPassword(req, res, next) {
   })();
 }
 
+//reset password route
 function userResetPassword(req, res, next) {
   jwt.verify(req.params.token, process.env.ACCESS_SECRET_KEY, (err, user) => {
     (async () => {
@@ -112,7 +115,7 @@ function userResetPassword(req, res, next) {
           if (result.err === false) {
             const newPass = md5(req.body.newPassword);
             const user = await userRepo.findUserByEmail(data.ref_email);
-            await userRepo.updateUserPasswordById(user.id, newPass);
+            await userRepo.updateUserPassword(user.id, newPass);
             await valRepo.updateValidationStatus(data.ref_email);
             res
               .status(200)
@@ -132,6 +135,7 @@ function userResetPassword(req, res, next) {
   });
 }
 
+//user auto logout
 function userAutoLogout(req, res, next) {
   (async () => {
     const data = await tokenRepo.findTokenByIdAndStatus(req.user.id);
@@ -151,6 +155,7 @@ function userAutoLogout(req, res, next) {
   })();
 }
 
+//user logout
 function userLogout(req, res, next) {
   (async () => {
     const token = await tokenRepo.findTokenByUserId(req.user.id);
@@ -159,6 +164,7 @@ function userLogout(req, res, next) {
   })();
 }
 
+//regenerate access token
 function RegenerateAccessToken(req, res, next) {
   const authHeader = req.headers.authorization;
   if (authHeader) {

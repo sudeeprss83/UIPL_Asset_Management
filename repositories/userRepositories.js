@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const user = require("../models/user");
 
 module.exports.createUser = async (user) => {
   return new Promise((resolve, reject) => {
@@ -12,9 +13,21 @@ module.exports.createUser = async (user) => {
   });
 };
 
-module.exports.updateUserPasswordById = async (id, password) => {
+module.exports.updateUserPassword = async (id, password) => {
   return new Promise((resolve, reject) => {
-    User.update({ password: password }, { where: { id } })
+    User.update({ password }, { where: { id } })
+      .then((data) => {
+        resolve(data);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+module.exports.updateUser = async (id, newUser) => {
+  return new Promise((resolve, reject) => {
+    User.update(newUser, { where: { id } })
       .then((data) => {
         resolve(data);
       })
@@ -36,21 +49,9 @@ module.exports.findUserByEmail = async (email) => {
   });
 };
 
-module.exports.updateAccountStatus = async (email) => {
+module.exports.findUsers = async (roleId) => {
   return new Promise((resolve, reject) => {
-    User.update({ status: "Active" }, { where: { email: email } })
-      .then((data) => {
-        resolve(data);
-      })
-      .catch((err) => {
-        reject(err);
-      });
-  });
-};
-
-module.exports.findAllAdmins = async () => {
-  return new Promise((resolve, reject) => {
-    User.findAll({ where: { roleId: 2 } })
+    User.findAll({ where: { roleId } })
       .then((admins) => {
         resolve(admins);
       })
@@ -60,7 +61,7 @@ module.exports.findAllAdmins = async () => {
   });
 };
 
-module.exports.findAdminById = async (id) => {
+module.exports.findUserById = async (id) => {
   return new Promise((resolve, reject) => {
     User.findOne({ where: { id } })
       .then((admin) => {

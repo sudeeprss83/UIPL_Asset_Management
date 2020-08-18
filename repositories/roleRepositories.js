@@ -12,6 +12,18 @@ module.exports.findRoleId = async (role) => {
   });
 };
 
+module.exports.findRoleById = async (roleId) => {
+  return new Promise((resolve, reject) => {
+    Role.findOne({ where: { roleId } })
+      .then((role) => {
+        resolve(role.role);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports.createRole = async (data) => {
   return new Promise((resolve, reject) => {
     Role.create({

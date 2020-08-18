@@ -1,4 +1,4 @@
-//@sudip saha roy 
+//@sudip saha roy
 
 const md5 = require("md5");
 
@@ -6,107 +6,259 @@ const pwdChk = require("../helpers/passwordCheck");
 const userRepo = require("../repositories/userRepositories");
 const roleRepo = require("../repositories/roleRepositories");
 
-//for route protection teesting
+//for route protection testing
 function dashboard(req, res, next) {
   console.log(req.user);
   res.json({ status: 200, msg: "this is super-admin's dashboard" });
 }
 
-function addAdminOrSubAdmin(req, res, next) {
-  if (req.user.roleId == 1) {
-    (async () => {
-      const roleId = await roleRepo.findRoleId(req.body.role);
-      const admin = {
-        name: req.body.name,
-        email: req.body.email,
-        password: md5(req.body.password),
-        roleId: roleId,
-      };
-      await userRepo.createUser(admin);
-      res
-        .status(200)
-        .json({ status: 200, msg: `${req.body.role} successfully created` });
-    })();
-  } else {
-    res.status(403).json({ status: 403, message: "Access Denied" });
-  }
-}
-
-function allAdminsOrSubAdmins(req, res, next) {
-  if (req.user.roleId == 1) {
-    (async () => {
-      const data = await userRepo.findAllAdmins();
-      res.status(200).json({ status: 200, data });
-    })();
-  } else {
-    res.status(403).json({ status: 403, message: "Access Denied" });
-  }
-}
-
-function specificAdminOrSubAdmin(req, res, next) {
-  if (req.user.roleId == 1) {
-    (async () => {
-      const data = await userRepo.findAdminById(req.params.id);
-      res.status(200).json({ status: 200, data });
-    })();
-  } else {
-    res.status(403).json({ status: 403, message: "Access Denied" });
-  }
-}
-
-function blockAdminOrSubAdmin(req, res, next) {
-  if (req.user.roleId == 1) {
-    (async () => {
-      const user = await userRepo.findAdminById(req.params.id);
-      if (user.status === "Blocked") {
-        res.status(403).json({ status: 403, msg: "User is already Blocked!!" });
-      } else {
-        await userRepo.blockAdmin(req.params.id);
-        res.status(200).json({ status: 200, msg: "User Blocked!!" });
-      }
-    })();
-  } else {
-    res.status(403).json({ status: 403, message: "Access Denied" });
-  }
-}
-
-function unblockAdminOrSubAdmin(req, res, next) {
-  if (req.user.roleId == 1) {
-    (async () => {
-      const user = await userRepo.findAdminById(req.params.id);
-      if (user.status === "Blocked") {
-        await userRepo.unblockAdmin(req.params.id);
-        res.status(200).json({ status: 200, msg: "User Unblocked!!" });
-      } else {
-        res.status(403).json({ status: 403, msg: "User is already Active!!" });
-      }
-    })();
-  } else {
-    res.status(403).json({ status: 403, message: "Access Denied" });
-  }
-}
-
-function changeAdminOrSubAdminPassword(req, res, next) {
-  if (req.user.roleId == 1) {
-    const result = pwdChk.passwordCheck(
-      req.body.newPassword,
-      req.body.cnfNewPassword
-    );
-    if (result) {
-      const newPass = md5(req.body.newPassword);
+// no-->11.1(view admin)-->(visible to super-admin)
+function viewAdmin(req, res, next) {
+  (async () => {
+    const role = await roleRepo.findRoleById(req.user.roleId);
+    if (role === "super_admin") {
       (async () => {
-        await userRepo.updateUserPasswordById(req.params.id, newPass);
-        res
-          .status(200)
-          .json({ status: 200, message: "new password updated successfully" });
+        try {
+          const roleId = 2;
+          const admins = await userRepo.findUsers(roleId);
+          res.status(200).json({ status: 200, admins });
+        } catch (error) {
+          console.log(error);
+        }
       })();
+    } else {
+      res.status(403).json({ status: 403, message: "Access Denied" });
     }
-  } else {
-    res.status(403).json({ status: 403, message: "Access Denied" });
-  }
+  })();
 }
 
-//change password -> admin profile
+// no-->11.2(edit admin)-->(accessible by super-admin)
+function editAdmin(req, res, next) {
+  (async () => {
+    const role = await roleRepo.findRoleById(req.user.roleId);
+    if (role === "super_admin") {
+      (async () => {
+        try {
+          const roleId = await roleRepo.findRoleId(req.body.role);
+          const user = {
+            name: req.body.name,
+            email: req.body.email,
+            roleId: roleId,
+          };
+          await userRepo.updateUser(req.params.id, user);
+          res
+            .status(200)
+            .json({ status: 200, msg: `User details successfully updated` });
+        } catch (error) {
+          res.status(403).send({ status: 403, msg: error.message });
+        }
+      })();
+    } else {
+      res.status(403).json({ status: 403, message: "Access Denied" });
+    }
+  })();
+}
+
+// no-->11.3(add sub-admin)-->(accessible by super-admin and admin)
+function createSubAdmin(req, res, next) {
+  (async () => {
+    const role = await roleRepo.findRoleById(req.user.roleId);
+    if (role === "super_admin") {
+      (async () => {
+        const subAdmin = {
+          name: req.body.name,
+          email: req.body.email,
+          password: md5(req.body.password),
+          roleId: 3,
+        };
+        try {
+          await userRepo.createUser(subAdmin);
+          res
+            .status(200)
+            .json({ status: 200, msg: `sub_admin successfully created` });
+        } catch (error) {
+          res.status(403).send({ status: 403, msg: error.message });
+        }
+      })();
+    } else {
+      res.status(403).json({ status: 403, message: "Access Denied" });
+    }
+  })();
+}
+
+// no-->11.4(edit sub-admin)-->(accessible by super-admin and admin)
+function editSubAdmin(req, res, next) {
+  (async () => {
+    const role = await roleRepo.findRoleById(req.user.roleId);
+    if (role === "super_admin" || role === "admin") {
+      (async () => {
+        const user = await userRepo.findUserById(req.params.id);
+        const role = await roleRepo.findRoleById(user.roleId);
+        if (role === "sub_admin") {
+          try {
+            const roleId = await roleRepo.findRoleId(req.body.role);
+            const user = {
+              name: req.body.name,
+              email: req.body.email,
+              roleId: roleId,
+            };
+            await userRepo.updateUser(req.params.id, user);
+            res
+              .status(200)
+              .json({ status: 200, msg: `User details successfully updated` });
+          } catch (error) {
+            res.status(403).send({ status: 403, msg: error.message });
+          }
+        } else {
+          res
+            .status(403)
+            .json({ status: 403, message: "user is not sub_admin" });
+        }
+      })();
+    } else {
+      res.status(403).json({ status: 403, message: "Access Denied" });
+    }
+  })();
+}
+
+// no-->11.5(change sub-admin password)-->(accessible by super-admin and admin)
+function changeSubadminPassword(req, res, next) {
+  (async () => {
+    const role = await roleRepo.findRoleById(req.user.roleId);
+    if (role === "super_admin" || role === "admin") {
+      (async () => {
+        const user = await userRepo.findUserById(req.params.id);
+        const role = await roleRepo.findRoleById(user.roleId);
+        if (role === "sub_admin") {
+          (async () => {
+            const result = await pwdChk.passwordCheck(
+              req.body.newPassword,
+              req.body.cnfNewPassword
+            );
+            if (result.err === false) {
+              const newPass = md5(req.body.newPassword);
+              (async () => {
+                await userRepo.updateUserPassword(req.params.id, newPass);
+                res.status(200).json({
+                  status: 200,
+                  message: result.message,
+                });
+              })();
+            } else {
+              res.status(403).send({ status: 403, msg: result.message });
+            }
+          })();
+        } else {
+          res
+            .status(403)
+            .json({ status: 403, message: "user is not sub_admin" });
+        }
+      })();
+    } else {
+      res.status(403).json({ status: 403, message: "Access Denied" });
+    }
+  })();
+}
+
+// no-->11.6(block sub-admin)-->(accessible by super-admin and admin)
+function blockSubadmin(req, res, next) {
+  (async () => {
+    const role = await roleRepo.findRoleById(req.user.roleId);
+    if (role === "super_admin" || role === "admin") {
+      (async () => {
+        const user = await userRepo.findUserById(req.params.id);
+        const role = await roleRepo.findRoleById(user.roleId);
+        if (role === "sub_admin") {
+          if (user.status === "Blocked") {
+            res
+              .status(403)
+              .json({ status: 403, msg: "User is already Blocked!!" });
+          } else {
+            await userRepo.blockAdmin(req.params.id);
+            res.status(200).json({ status: 200, msg: "User Blocked!!" });
+          }
+        } else {
+          res
+            .status(403)
+            .json({ status: 403, message: "user is not sub_admin" });
+        }
+      })();
+    } else {
+      res.status(403).json({ status: 403, message: "Access Denied" });
+    }
+  })();
+}
+
+//no-->11.7  create role
+function createRole(req, res, next) {
+  (async () => {
+    const role = await roleRepo.findRoleById(req.user.roleId);
+    if (role === "super_admin" || role === "admin") {
+      (async () => {
+        const role = {
+          roleId: req.body.roleId,
+          roleName: req.body.roleName,
+        };
+        try {
+          await roleRepo.createRole(role);
+          res
+            .status(200)
+            .json({ status: 200, message: "role created successfully" });
+        } catch (error) {
+          res
+            .status(403)
+            .json({ status: 200, message: "error in creating role" });
+        }
+      })();
+    } else {
+      res.status(403).json({ status: 403, message: "Access Denied" });
+    }
+  })();
+}
+
+//no-->11.8  edit role
+function editRole(req, res, next) {
+  res.json("this is your dashboard");
+}
+
+//no-->11.9  assign role
+function assignRole(req, res, next) {
+  res.json("this is your dashboard");
+}
+
+// no-->11.10(unblock sub-admin)-->(accessible by super-admin and admin)
+function unblockSubadmin(req, res, next) {
+  (async () => {
+    const role = await roleRepo.findRoleById(req.user.roleId);
+    if (role === "super_admin" || role === "admin") {
+      (async () => {
+        const user = await userRepo.findUserById(req.params.id);
+        const role = await roleRepo.findRoleById(user.roleId);
+        if (role === "sub_admin") {
+          const user = await userRepo.findUserById(req.params.id);
+          if (user.status === "Blocked") {
+            await userRepo.unblockAdmin(req.params.id);
+            res.status(200).json({ status: 200, msg: "User Unblocked!!" });
+          } else {
+            res
+              .status(403)
+              .json({ status: 403, msg: "User is already Active!!" });
+          }
+        } else {
+          res
+            .status(403)
+            .json({ status: 403, message: "user is not sub_admin" });
+        }
+      })();
+    } else {
+      res.status(403).json({ status: 403, message: "Access Denied" });
+    }
+  })();
+}
+
+//============================================================================//
+
+//Super-Admin,admin,sub-admin can change password from profile
 function userUpdatePassword(req, res, next) {
   (async () => {
     const user = await userRepo.findUserByEmail(req.user.email);
@@ -124,7 +276,7 @@ function userUpdatePassword(req, res, next) {
         console.log(result);
         if (result.err === false) {
           const newPass = md5(req.body.newPassword);
-          await userRepo.updateUserPasswordById(req.user.id, newPass);
+          await userRepo.updateUserPassword(req.user.id, newPass);
           res.status(200).send({ status: 200, msg: result.message });
         } else {
           res.status(403).send({ status: 403, msg: result.message });
@@ -138,48 +290,19 @@ function userUpdatePassword(req, res, next) {
     }
   })();
 }
-
-function createRole(req, res, next) {
-  if (req.user.roleId == 1) {
-    (async () => {
-      const role = {
-        roleId: req.body.roleId,
-        roleName: req.body.roleName,
-      };
-      try {
-        await roleRepo.createRole(role);
-        res
-          .status(200)
-          .json({ status: 200, message: "role created successfully" });
-      } catch (error) {
-        res
-          .status(403)
-          .json({ status: 200, message: "error in creating role" });
-      }
-    })();
-  } else {
-    res.status(403).json({ status: 403, message: "Access Denied" });
-  }
-}
-
-function editAdmin(req, res, next) {
-  res.json("this is your dashboard");
-}
-
-function assignRole(req, res, next) {
-  res.json("this is your dashboard");
-}
+//=================================================================================
 
 module.exports = {
   dashboard,
-  addAdminOrSubAdmin,
-  allAdminsOrSubAdmins,
-  specificAdminOrSubAdmin,
-  blockAdminOrSubAdmin,
-  unblockAdminOrSubAdmin,
+  viewAdmin,
   editAdmin,
+  createSubAdmin,
+  editSubAdmin,
+  changeSubadminPassword,
+  blockSubadmin,
   createRole,
+  editRole,
   assignRole,
-  changeAdminOrSubAdminPassword,
-  userUpdatePassword
+  unblockSubadmin,
+  userUpdatePassword,
 };
